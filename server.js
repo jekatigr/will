@@ -123,7 +123,8 @@ app
 
         router.get('/polls', async function(req, res) {
             try {
-                let polls = await WillService.getPolls();
+                let login = req.user.login;
+                let polls = await WillService.getPolls(login);
                 return res.json({
                     success: true,
                     polls: polls
@@ -138,7 +139,7 @@ app
             try {
                 let login = req.user.login;
                 let title = req.body.title;
-                let description = req.body.title;
+                let description = req.body.description;
                 let options = req.body.options;
                 let result = await WillService.createPoll(title, description, options);
                 let data;
@@ -151,6 +152,20 @@ app
                     data = {success: false}
                 }
                 res.json(data);
+            } catch (ex) {
+                console.error(`Request exception on "${req.originalUrl}", ex: ${ex}`);
+                res.json({success: false, error: "Internal error. Please, try again later."})
+            }
+        });
+
+        router.post('/vote', isAuthenticated, async function(req, res) {
+            try {
+                let login = req.user.login;
+                let pollId = req.body.pollId;
+                let optionIndex = req.body.optionIndex;
+                res.json({
+                    success: await WillService.vote(pollId, optionIndex, login)
+                });
             } catch (ex) {
                 console.error(`Request exception on "${req.originalUrl}", ex: ${ex}`);
                 res.json({success: false, error: "Internal error. Please, try again later."})

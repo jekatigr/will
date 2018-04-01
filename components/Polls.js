@@ -32,7 +32,7 @@ class Polls extends Component {
     render() {
         let { user } = this.props.userState;
         let { polls, pollsLoaded, pollsLoadingError } = this.props.pollsState;
-        let { handlePollAdded } = this.props.pollsActions;
+        let { handlePollAdded, handleVoteAdded } = this.props.pollsActions;
 
         if (!pollsLoaded && !pollsLoadingError) {
             return (
@@ -51,7 +51,7 @@ class Polls extends Component {
         }
 
         if (this.state.mode === 'list') {
-            return <PollsList polls={polls} togglePollsListMode={this.togglePollsListMode}/>
+            return <PollsList polls={polls} togglePollsListMode={this.togglePollsListMode} handleVoteAdded={handleVoteAdded}/>
         } else if(this.state.mode === 'add') {
             return <AddPoll handlePollAdded={handlePollAdded} togglePollsListMode={this.togglePollsListMode}/>
         }

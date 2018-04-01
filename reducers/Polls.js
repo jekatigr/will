@@ -24,6 +24,32 @@ export default (state = initialState, action) => {
                 polls: polls
             }
         }
+        case c.ADD_VOTE: {
+            let polls = state.polls.map((p) => {
+                if(p.id === action.pollId) {
+                    let options = p.options.map((o, index) => {
+                        if (index === action.optionIndex) {
+                            return {
+                                ...o,
+                                votesCount: o.votesCount + 1,
+                                selected: true
+                            }
+                        }
+                        return o;
+                    })
+                    return {
+                        ...p,
+                        options: options
+                    }
+                }
+                return p;
+            })
+
+            return {
+                ...state,
+                polls: polls
+            }
+        }
         default: return state
     }
 }

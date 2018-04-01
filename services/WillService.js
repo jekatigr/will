@@ -86,8 +86,9 @@ module.exports = class WillService {
      * },...]
      * @returns {Promise<*>}
      */
-    static async getPolls() {
+    static async getPolls(login) {
         try {
+            let userAccount = await DatabaseService.getGolosUserAccount(login);
             let pollAccounts = await DatabaseService.getPollAccounts() || [];
             let logins = pollAccounts.map((p) => p.login);
             if (logins.length > 0) {
@@ -106,7 +107,8 @@ module.exports = class WillService {
                         description: pollRaw.d,
                         options: pollRaw.o.map((o) => ({
                             title: o,
-                            votesCount: 0
+                            votesCount: 0,
+                            selected: false
                         }))
                     }
 
@@ -115,12 +117,15 @@ module.exports = class WillService {
                         let alreadyVoted = []
                         for (let t of tArr) {
                             if (!alreadyVoted.includes(t.sender)) {
-                                let memoRaw = t.memo;
+                                let memoRaw = t.op[1].memo;
                                 let memo = WillService.decodeMemo(memoRaw);
                                 if (memo) {
                                     alreadyVoted.push(t.sender)
                                     let optionIndex = memo.optionIndex;
                                     poll.options[optionIndex].votesCount++
+                                    if(t.op[1].from === userAccount.remote_login) {
+                                        poll.options[optionIndex].selected = true;
+                                    }
                                 }
                             }
                         }
@@ -279,18 +284,18 @@ module.exports = class WillService {
         return encryptedHex;
     }
 
-    static async vote(pollId, option, login) {
+    static async vote(pollId, optionIndex, login) {
         let balance = await WillService.getAccountBalance(login);
         if (balance && balance > 1) {
             try {
                 let pollAccount = await DatabaseService.getPollAccount(pollId);
                 let senderAccount = await DatabaseService.getGolosUserAccount(login);
                 if (pollAccount && senderAccount) {
-                    let pollGolosAccount = await GolosService.getPollAccounts([pollAccount.login]);
-                    if (pollGolosAccount) {
-                        pollGolosAccount = pollGolosAccount[0];
-                        let pollInfo = JSON.parse(pollGolosAccount.json_metadata);
-                        let optionIndex = pollInfo.o.indexOf(option);
+                    // let pollGolosAccount = await GolosService.getPollAccounts([pollAccount.login]);
+                    // if (pollGolosAccount) {
+                    //     pollGolosAccount = pollGolosAccount[0];
+                    //     let pollInfo = JSON.parse(pollGolosAccount.json_metadata);
+                    //     let optionIndex = pollInfo.o.indexOf(option);
                         if (optionIndex > -1) {
                             let numberOfTries = 10;
                             while (numberOfTries >= 0) {
@@ -306,8 +311,8 @@ module.exports = class WillService {
                                 }
                                 numberOfTries--;
                             }
+
                         }
-                    }
                 }
             } catch (ex) {
                 console.log(`Error, ex: ${ex}`)

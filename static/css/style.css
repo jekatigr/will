@@ -33,3 +33,12 @@ html, body{
 .remove_option_icon {
     margin: auto 0;
 }
+
+.vote_option {
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.vote_option:hover {
+    background-color: #eaf7f2;
+}

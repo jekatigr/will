@@ -9,11 +9,10 @@ const functions = {
             if (!isServer) {
                 let state = getState();
                 if (!state.Polls.pollsLoaded) {
-                        dispatch(functions.receivePolls([]))
-                    return;
                     dispatch(functions.requestPolls())
                     let res = await get('api/v1/polls');
                     if (res && res.success && res.polls) {
+                        dispatch(functions.receivePolls(res.polls))
                     } else {
                         showNotificationError("Ошибка при загрузке списка голосований, попробуйте позже.")
                         dispatch(functions.receivePollsError())
@@ -39,6 +38,12 @@ const functions = {
     handlePollAdded: (poll) => ({
         type: c.ADD_CREATED_POLL,
         poll: poll
+    }),
+
+    handleVoteAdded: (pollId, optionIndex) => ({
+        type: c.ADD_VOTE,
+        pollId: pollId,
+        optionIndex: optionIndex
     })
 }
 
