@@ -50,11 +50,22 @@ class Polls extends Component {
             )
         }
 
+        let content;
         if (this.state.mode === 'list') {
-            return <PollsList polls={polls} togglePollsListMode={this.togglePollsListMode} handleVoteAdded={handleVoteAdded}/>
+            content = <PollsList polls={polls} togglePollsListMode={this.togglePollsListMode} handleVoteAdded={handleVoteAdded}/>
         } else if(this.state.mode === 'add') {
-            return <AddPoll handlePollAdded={handlePollAdded} togglePollsListMode={this.togglePollsListMode}/>
+            content = <AddPoll handlePollAdded={handlePollAdded} togglePollsListMode={this.togglePollsListMode}/>
         }
+        return (
+            <div className="uk-padding-top">
+                <div className="uk-section uk-padding-small">
+                    <button className="uk-button uk-button-primary uk-align-center" onClick={this.togglePollsListMode}>
+                        Добавить голосование
+                    </button>
+                </div>
+                {content}
+            </div>
+        )
     }
 }
 
