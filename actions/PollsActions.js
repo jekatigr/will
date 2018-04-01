@@ -1,7 +1,8 @@
 import * as c from '../constants/Polls';
 import { get } from '../utils/fetch';
 import { showNotificationError } from '../utils/UIkitWrapper';
-import Router from 'next/router'
+
+import UserActions from "./UserActions";
 
 const functions = {
     loadPolls: (isServer, user) => {
@@ -40,11 +41,21 @@ const functions = {
         poll: poll
     }),
 
-    handleVoteAdded: (pollId, optionIndex) => ({
-        type: c.ADD_VOTE,
-        pollId: pollId,
-        optionIndex: optionIndex
-    })
+    handleVoteAdded: (pollId, optionIndex) => {
+        return async (dispatch, getState) => {
+                let state = getState();
+                if (state.User.balanceLoaded) {
+                    let balance = state.User.balance - 1;
+                    dispatch(UserActions.handleBalanceChanged(balance))
+                    dispatch({
+                        type: c.ADD_VOTE,
+                        pollId: pollId,
+                        optionIndex: optionIndex
+                    })
+                }
+            }
+        }
+
 }
 
 export default functions

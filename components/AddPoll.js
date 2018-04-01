@@ -4,7 +4,7 @@ import { post } from '../utils/fetch'
 import ProceedIcon from 'react-icons/lib/md/arrow-forward';
 import RemoveIcon from 'react-icons/lib/md/highlight-remove';
 
-import { showNotificationError } from '../utils/UIkitWrapper'
+import {showNotificationError, showNotificationSuccess} from '../utils/UIkitWrapper'
 
 export default class AddPoll extends Component {
     constructor(props) {
@@ -98,6 +98,7 @@ export default class AddPoll extends Component {
             if (res && res.success && res.poll) {
                 handlePollAdded(res.poll);
                 togglePollsListMode();
+                showNotificationSuccess("Голосование создано.")
             } else {
                 showNotificationError("Внутренняя ошибка, пожалуйста, попробуйте позже.")
             }
