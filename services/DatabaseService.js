@@ -53,6 +53,22 @@ module.exports = class DatabaseService {
         }
     }
 
+    static async getUserAccountById(userId) {
+        let res = await DatabaseService.selectQuery('SELECT login FROM accounts WHERE id = ?', [userId]);
+        if (res && res[0]) {
+            return res[0]
+        }
+        return null;
+    }
+
+    static async getUserAccountByLogin(login) {
+        let res = await DatabaseService.selectQuery('SELECT id, login, password FROM accounts WHERE login = ?', [login]);
+        if (res && res[0]) {
+            return res[0]
+        }
+        return null;
+    }
+
     static async getBaseAccount() {
         let res = await DatabaseService.selectQuery('SELECT * FROM base_account');
         if (res && res[0]) {

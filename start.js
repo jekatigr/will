@@ -1,5 +1,5 @@
-const WillService = require('./WillService');
-const GolosService = require('./GolosService');
+const WillService = require('./services/WillService');
+const GolosService = require('./services/GolosService');
 
 // var creator = 'jekatigr';
 // var wif = '5JufRtVnSX6daDj1RmzmHSzaKHU4vTCabKAxtfQcruj4tQqiPR1'; //jekatigr
