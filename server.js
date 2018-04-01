@@ -134,6 +134,29 @@ app
             }
         });
 
+        router.post('/poll', isAuthenticated, async function(req, res) {
+            try {
+                let login = req.user.login;
+                let title = req.body.title;
+                let description = req.body.title;
+                let options = req.body.options;
+                let result = await WillService.createPoll(title, description, options);
+                let data;
+                if (result) {
+                    data = {
+                        success: true,
+                        poll: result
+                    }
+                } else {
+                    data = {success: false}
+                }
+                res.json(data);
+            } catch (ex) {
+                console.error(`Request exception on "${req.originalUrl}", ex: ${ex}`);
+                res.json({success: false, error: "Internal error. Please, try again later."})
+            }
+        });
+
         server.use('/api/v1', router);
 
         server.get('*', (req, res) => {

@@ -14,6 +14,16 @@ export default (state = initialState, action) => {
             return { ...state, polls: action.polls, pollsLoaded: true }
         case c.RECEIVE_POLLS_ERROR:
             return { ...state, pollsLoaded: false, pollsLoadingError: true }
+        case c.ADD_CREATED_POLL: {
+            let polls = [...state.polls, action.poll]
+
+            return {
+                ...state,
+                pollsLoaded: true,
+                pollsLoadingError: false,
+                polls: polls
+            }
+        }
         default: return state
     }
 }

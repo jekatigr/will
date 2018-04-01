@@ -67,7 +67,7 @@ class BuyTokensForm extends Component {
                     <div className="uk-width-1-1 uk-width-2-3@s uk-width-2-5@m uk-width-2-5@l uk-width-1-3@xl uk-align-center">
                         <div className="uk-card uk-card-default">
                             <div className="uk-card-header">
-                                Покупка токенов для голосований
+                                <h3>Покупка токенов для голосований</h3>
                             </div>
                             <div className="uk-card-body uk-padding-remove-bottom">
                                 <form onSubmit={this.handleSubmit} method="POST" className="uk-margin-small-bottom">

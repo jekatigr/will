@@ -29,3 +29,7 @@ html, body{
 .user_panel_balance {
     cursor: pointer;
 }
+
+.remove_option_icon {
+    margin: auto 0;
+}

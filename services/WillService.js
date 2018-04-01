@@ -39,12 +39,11 @@ module.exports = class WillService {
 
     /**
      * Method creates a poll. Poll params and vote options will be stored in new golos account.
-     * @param ownerId poll owner id
      * @param title poll title
      * @param description poll desc
      * @param options poll vote options (array of strings)
      */
-    static async createPoll(ownerId, title, description, options) {
+    static async createPoll(title, description, options) {
         try {
             let loginPrefix = "poll-";
 
@@ -58,11 +57,19 @@ module.exports = class WillService {
             if (res1) {
                 let res2 = await DatabaseService.savePollAccount(res1.login);
                 if (res1 && res2) {
-                    return true;
+                    return {
+                        id: res2.insertId,
+                        title: title,
+                        description: description,
+                        options: options.map((o)=> ({
+                            title: o,
+                            votesCount: 0
+                        }))
+                    };
                 }
             }
         } catch (ex) {
-            console.log(`error in createPoll, params: ownerId: ${ownerId}, title: ${title}, description: ${description}, options: ${options}, ex: ${ex}`)
+            console.log(`error in createPoll, params: title: ${title}, description: ${description}, options: ${options}, ex: ${ex}`)
         }
         return false;
     }

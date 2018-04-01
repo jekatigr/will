@@ -4,7 +4,26 @@ import { bindActionCreators } from 'redux'
 
 import pollsActions from "../actions/PollsActions";
 
+import PollsList from './PollsList'
+import AddPoll from './AddPoll'
+
 class Polls extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            mode: 'list', //or 'add'
+        }
+
+        this.togglePollsListMode = this.togglePollsListMode.bind(this);
+    }
+
+    togglePollsListMode() {
+        this.setState({
+            mode: (this.state.mode === 'list') ? 'add' : 'list'
+        })
+    }
+
     async componentDidMount() {
         let { loadPolls } = this.props.pollsActions;
         await loadPolls();
@@ -13,7 +32,7 @@ class Polls extends Component {
     render() {
         let { user } = this.props.userState;
         let { polls, pollsLoaded, pollsLoadingError } = this.props.pollsState;
-        // let { logout } = this.props.userActions;
+        let { handlePollAdded } = this.props.pollsActions;
 
         if (!pollsLoaded && !pollsLoadingError) {
             return (
@@ -31,20 +50,11 @@ class Polls extends Component {
             )
         }
 
-        if (pollsLoaded && (!polls || polls.length === 0)) {
-            return (
-                <div className="uk-position-center uk-alert">
-                    {/*Голосований нет, но можно <a>создать...</a>*/}
-                    Голосований нет.
-                </div>
-            )
+        if (this.state.mode === 'list') {
+            return <PollsList polls={polls} togglePollsListMode={this.togglePollsListMode}/>
+        } else if(this.state.mode === 'add') {
+            return <AddPoll handlePollAdded={handlePollAdded} togglePollsListMode={this.togglePollsListMode}/>
         }
-
-        return (
-            <div>
-                Голосования
-            </div>
-        )
     }
 }
 
