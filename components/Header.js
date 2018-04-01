@@ -18,6 +18,10 @@ class Header extends Component {
         Router.push('/buy');
     }
 
+    async componentDidMount() {
+        let { loadBalance } = this.props.userActions;
+        await loadBalance();
+    }
 
     render() {
         let { router, user, balance } = this.props;

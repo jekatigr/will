@@ -75,8 +75,7 @@ class BuyTokensForm extends Component {
                                     <fieldset className="uk-fieldset">
                                         <div className="uk-margin">
                                             <div className="uk-position-relative">
-                                                {/*<span className="uk-form-icon"><UserIcon size={20}/></span>*/}
-                                                <input name="amount" className="uk-input" type="number" value={amount} placeholder="Количество..." onChange={this.handleAmountChange}/>
+                                                <input name="amount" className="uk-input" type="number" value={amount} placeholder="Введите количество..." onChange={this.handleAmountChange}/>
                                             </div>
                                         </div>
                                         <div className="uk-margin uk-align-right">

@@ -213,7 +213,7 @@ module.exports = class WillService {
                                     let memo = JSON.stringify({
                                         id: pollId,
                                         o: optionIndex,
-                                        sign: "sign"
+                                        s: "sign"
                                     })
                                     await GolosService.transferTokens(senderAccount.remote_login, senderAccount.active_key, pollAccount.login, golos_amount, memo)
                                     console.log('vote sent')

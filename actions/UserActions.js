@@ -40,7 +40,22 @@ const functions = {
 
     handleUserLogout: () => ({
         type: c.USER_LOGOUT
-    })
+    }),
+
+    loadBalance: (exchangeId) => {
+        return async (dispatch, getState) => {
+            let state = getState();
+            let balanceLoaded = state.User.balanceLoaded;
+            if (!balanceLoaded) {
+                let data = await get('api/v1/balance')
+                if (data && data.success) {
+                    dispatch(functions.handleBalanceChanged(data.balance))
+                } else {
+                    showNotificationError("Ошибка при загрузке баланса.");
+                }
+            }
+        }
+    },
 }
 
 export default functions

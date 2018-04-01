@@ -79,6 +79,26 @@ app
             res.json({success: true});
         });
 
+        router.get('/balance', isAuthenticated, async function(req, res) {
+            try {
+                let login = req.user.login;
+                let balance = await WillService.getAccountBalance(login);
+                let data;
+                if (balance !== false) {
+                    data = {
+                        success: true,
+                        balance: balance
+                    }
+                } else {
+                    data = {success: false}
+                }
+                res.json(data);
+            } catch (ex) {
+                console.error(`Request exception on "${req.originalUrl}", ex: ${ex}`);
+                res.json({success: false, error: "Internal error. Please, try again later."})
+            }
+        });
+
         router.post('/buy', isAuthenticated, async function(req, res) {
             try {
                 let login = req.user.login;
