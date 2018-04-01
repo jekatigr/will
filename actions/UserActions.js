@@ -14,6 +14,11 @@ const functions = {
         user: user
     }),
 
+    handleBalanceChanged: (balance) => ({
+        type: c.BALANCE_CHANGED,
+        balance: balance
+    }),
+
     logout: () => {
         return async (dispatch) => {
             try {

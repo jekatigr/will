@@ -6,8 +6,9 @@ const cookieParser = require('cookie-parser');
 const session = require('cookie-session');
 const passport = require('passport');
 
-const { localStrategy, serializeUser, deserializeUser } = require('./services/AuthenticationService');
+const { localStrategy, serializeUser, deserializeUser, isAuthenticated } = require('./services/AuthenticationService');
 const DatabaseService = require('./services/DatabaseService');
+const WillService = require('./services/WillService');
 
 const { NODE_ENV } = process.env
 
@@ -76,6 +77,28 @@ app
         router.get('/logout', function(req, res) {
             req.logout();
             res.json({success: true});
+        });
+
+        router.post('/buy', isAuthenticated, async function(req, res) {
+            try {
+                let login = req.user.login;
+                let amount = +req.body.amount;
+                let result = await WillService.buyTokens(req.user.login, amount);
+                let data;
+                if (result) {
+                    let balance = await WillService.getAccountBalance(login)
+                    data = {
+                        success: true,
+                        balance: balance
+                    }
+                } else {
+                    data = {success: false}
+                }
+                res.json(data);
+            } catch (ex) {
+                console.error(`Request exception on "${req.originalUrl}", ex: ${ex}`);
+                res.json({success: false, error: "Internal error. Please, try again later."})
+            }
         });
 
         server.use('/api/v1', router);

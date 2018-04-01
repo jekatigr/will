@@ -14,8 +14,13 @@ class Header extends Component {
         Router.push('/login');
     }
 
+    balanceClicked() {
+        Router.push('/buy');
+    }
+
+
     render() {
-        let { router, user } = this.props;
+        let { router, user, balance } = this.props;
         let { logout } = this.props.userActions;
         let currentPage = router.pathname;
 
@@ -28,8 +33,8 @@ class Header extends Component {
         let userPanel = !user ? '' : (
             <div className="uk-navbar-right header_logout_login_link">
                 <span className="uk-margin-right navbar_text">{user.login}</span>
-                <div className="uk-badge uk-badge uk-margin-right uk-padding-small">
-                    Баланс: 3
+                <div className="uk-badge uk-badge uk-margin-right uk-padding-small user_panel_balance" onClick={this.balanceClicked.bind(this)}>
+                    Баланс голосов: {+balance}
                 </div>
                 <div onClick={logout}>
                     <a>Выход <LogoutIcon size={30}/></a>

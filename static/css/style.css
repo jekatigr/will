@@ -25,3 +25,7 @@ html, body{
 .navbar_text {
     color: #fff;
 }
+
+.user_panel_balance {
+    cursor: pointer;
+}

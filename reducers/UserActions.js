@@ -1,7 +1,8 @@
 import * as c from "../constants/UserActions";
 
 const initialState = {
-    user: null
+    user: null,
+    balance: 0
 }
 
 export default (state = initialState, action) => {
@@ -12,6 +13,8 @@ export default (state = initialState, action) => {
             return { ...state, user: action.user }
         case c.USER_LOGOUT:
             return { ...state, user: null }
+        case c.BALANCE_CHANGED:
+            return { ...state, balance: action.balance }
         default: return state
     }
 }
