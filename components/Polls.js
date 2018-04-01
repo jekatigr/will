@@ -25,7 +25,7 @@ class Polls extends Component {
 
         if (pollsLoadingError) {
             return (
-                <div className="uk-position-center uk-alert">
+                <div className="uk-position-center uk-alert uk-alert-danger">
                     Ошибка при загрузке голосований, обновите страницу.
                 </div>
             )
@@ -34,7 +34,8 @@ class Polls extends Component {
         if (pollsLoaded && (!polls || polls.length === 0)) {
             return (
                 <div className="uk-position-center uk-alert">
-                    Голосований нет, но можно <a>создать...</a>
+                    {/*Голосований нет, но можно <a>создать...</a>*/}
+                    Голосований нет.
                 </div>
             )
         }

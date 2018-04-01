@@ -67,14 +67,62 @@ module.exports = class WillService {
         return false;
     }
 
+    /**
+     * Return all polls in format: [{
+     *      id,
+     *      title,
+     *      description,
+     *      options: [{
+     *          title,
+     *          votesCount
+     *      },...]
+     * },...]
+     * @returns {Promise<*>}
+     */
     static async getPolls() {
         try {
             let pollAccounts = await DatabaseService.getPollAccounts() || [];
             let logins = pollAccounts.map((p) => p.login);
             if (logins.length > 0) {
                 let accounts = await GolosService.getPollAccounts(logins);
-                let polls = accounts.map((a) => JSON.parse(a.json_metadata));
-                return polls;
+                let pollsRaw = accounts.map((a) => JSON.parse(a.json_metadata));
+
+                let requests = logins.map((l) => GolosService.getAccountTransactions(l));
+                let transactions = await Promise.all(requests);
+
+                let res = []
+                for (let i = 0; i < pollsRaw.length; i++) {
+                    let pollRaw = pollsRaw[i];
+                    let poll = {
+                        id: pollAccounts[i].id,
+                        title: pollRaw.t,
+                        description: pollRaw.d,
+                        options: pollRaw.o.map((o) => ({
+                            title: o,
+                            votesCount: 0
+                        }))
+                    }
+
+                    let tArr = transactions[i] //транзакции в одном голосовании, считаем по одному голосу от каждого клиента
+                    if (tArr && tArr.length > 0) {//проверяем входящие транзакции и считаем голоса для каждого из вариантов
+                        let alreadyVoted = []
+                        for (let t of tArr) {
+                            if (!alreadyVoted.includes(t.sender)) {
+                                let memoRaw = t.memo;
+                                let memo = WillService.decodeMemo(memoRaw);
+                                if (memo) {
+                                    alreadyVoted.push(t.sender)
+                                    let optionIndex = memo.optionIndex;
+                                    poll.options[optionIndex].votesCount++
+                                }
+                            }
+                        }
+                    }
+
+                    res.push(poll);
+                }
+
+                return res;
             }
             return []
         } catch (ex) {

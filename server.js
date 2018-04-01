@@ -121,6 +121,19 @@ app
             }
         });
 
+        router.get('/polls', async function(req, res) {
+            try {
+                let polls = await WillService.getPolls();
+                return res.json({
+                    success: true,
+                    polls: polls
+                })
+            } catch (ex) {
+                console.error(`Request exception on "${req.originalUrl}", ex: ${ex}`);
+                res.json({success: false, error: "Internal error. Please, try again later."})
+            }
+        });
+
         server.use('/api/v1', router);
 
         server.get('*', (req, res) => {
