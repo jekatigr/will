@@ -37,7 +37,10 @@ class Header extends Component {
         let userPanel = !user ? '' : (
             <div className="uk-navbar-right header_logout_login_link">
                 <span className="uk-margin-right navbar_text">{user.login}</span>
-                <div className="uk-badge uk-badge uk-margin-right uk-padding-small user_panel_balance" onClick={this.balanceClicked.bind(this)}>
+                <div className="uk-badge uk-badge uk-margin-right uk-padding-small user_panel_balance"
+                     onClick={this.balanceClicked.bind(this)}
+                     data-uk-tooltip="title: Кликните для пополнения; pos: bottom"
+                >
                     Баланс голосов: {+balance}
                 </div>
                 <div onClick={logout}>

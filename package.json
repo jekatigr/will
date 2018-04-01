@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Will of the nation project",
   "dependencies": {
+    "aes-js": "^3.1.0",
     "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",
     "compression": "^1.7.2",

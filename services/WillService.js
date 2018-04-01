@@ -1,6 +1,14 @@
 const DatabaseService = require('./DatabaseService')
 const GolosService = require('./GolosService')
 
+let aesjs = require('aes-js');
+let pbkdf2 = require('pbkdf2');
+
+const SECRET_PASSWORD_KEY = 'SECRET_PASSWORD_KEY'
+const SECRET_SALT = 'SECRET_SALT'
+
+let key_128 = pbkdf2.pbkdf2Sync(SECRET_PASSWORD_KEY, SECRET_SALT, 1, 128 / 8, 'sha512');
+
 module.exports = class WillService {
     static async createGolosAccount(loginPrefix, password, fee, jsonMetadata) {
         console.log(`creating new golos account with params: loginPrefix prefix: ${loginPrefix}, password: ${password}, fee: ${fee}, jsonMetadata: ${jsonMetadata}`)
@@ -112,8 +120,7 @@ module.exports = class WillService {
                 console.log(`try to send tokens to ${receiverAccount.remote_login} account from base: ${baseAccount}`)
                 try {
                     let golos_amount = amount.toFixed(3) + " GOLOS"
-                    let memo = "123"
-                    await GolosService.transferTokens(baseAccount.login, baseAccount.active_key, receiverAccount.remote_login, golos_amount, memo)
+                    await GolosService.transferTokens(baseAccount.login, baseAccount.active_key, receiverAccount.remote_login, golos_amount, '')
                     console.log('tokens sent')
                     return true;
                 } catch (ex) {
@@ -141,19 +148,17 @@ module.exports = class WillService {
 
                     let pollIdsVoted = []
                     for (let t of transactions) {
-                        let memo;
-                        try {
-                            memo = JSON.parse(t.op[1].memo);
-                        } catch (ex) {
-                            console.log(`Error while parsing memo, memo: ${t.op[1].memo}`)
-                        }
+                        let memoEncoded = t.op[1].memo;
                         let sender = t.op[1].from;
                         let amount = +(t.op[1].amount.replace('GOLOS', ''))
-                        if (memo && memo.spent) {
-                            let pollId = WillService.checkMemoSignature(account.remote_login, memo)
-                            if (pollId && !pollIdsVoted.includes(pollId)) {
-                                pollIdsVoted.push(pollId)
-                                balance -= amount;
+                        if (sender === account.remote_login && memoEncoded) {
+                            let memo = WillService.decodeMemo(memoEncoded)
+                            if (memo) {
+                                let pollId = memo.pollId;
+                                if (pollId && !pollIdsVoted.includes(pollId)) {
+                                    pollIdsVoted.push(pollId)
+                                    balance -= amount;
+                                }
                             }
                         } else if(sender === baseAccount.login) {
                             balance += amount;
@@ -173,23 +178,50 @@ module.exports = class WillService {
     }
 
     /*
-    * Транзакции за голосования подписывать хэшем, при подсчете голосов учитывать только первый подписанный хэш для голосования с аккаунта.
-    * Остальные переводы с данного аккаунта не учитывать.
-    *
-    * memo id аккаунта голосования, индекс выбранного варианта и хэш, подписывающий логин и этот id
-    *
-    * Возвращает undefined в случае некорректной подписи, либо id аккаунта голосования в случае корректной
+     * Возвращает undefined в случае некорректной подписи, либо расшифрованное memo в случае корректной
     * */
-    static async checkMemoSignature(login, memo) {
-        let id = memo.id;
-        let sign = memo.s;
-        let option = memo.o;
+    static decodeMemo(memoEncoded) {
+        try {
+            // When ready to decrypt the hex string, convert it back to bytes
+            let encryptedBytes = aesjs.utils.hex.toBytes(memoEncoded);
 
-        if (sign && option) {
-            return id;
-        } else {
-            return undefined;
+            // The counter mode of operation maintains internal state, so to
+            // decrypt a new instance must be instantiated.
+            let aesCtr = new aesjs.ModeOfOperation.ctr(key_128);
+            let decryptedBytes = aesCtr.decrypt(encryptedBytes);
+
+            // Convert our bytes back into text
+            let decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
+
+            let res = JSON.parse(decryptedText);
+            return {
+                pollId: res.id,
+                optionIndex: res.o
+            }
+        } catch (ex) {
+            console.log(`error while decoding memo, ex: ${ex}`)
         }
+        return undefined;
+    }
+
+    /**
+     * Uses {@link https://github.com/ricmoo/aes-js#ctr---counter-recommended}
+     * @param pollId
+     * @param optionIndex
+     * @returns {string} encrypted hash
+     */
+    static encodeMemo(pollId, optionIndex) {
+        // Convert text to bytes
+        let text = JSON.stringify({id: pollId, o: optionIndex});
+        let textBytes = aesjs.utils.utf8.toBytes(text);
+
+        // The counter is optional, and if omitted will begin at 1
+        let aesCtr = new aesjs.ModeOfOperation.ctr(key_128);
+        let encryptedBytes = aesCtr.encrypt(textBytes);
+
+        // To print or store the binary data, you may convert it to hex
+        let encryptedHex = aesjs.utils.hex.fromBytes(encryptedBytes);
+        return encryptedHex;
     }
 
     static async vote(pollId, option, login) {
@@ -210,11 +242,7 @@ module.exports = class WillService {
                                 console.log(`try to vote, poll id: ${pollId}, poll account: ${JSON.stringify(pollAccount)} account from base: ${JSON.stringify(senderAccount)}`)
                                 try {
                                     let golos_amount = "1.000 GOLOS"
-                                    let memo = JSON.stringify({
-                                        id: pollId,
-                                        o: optionIndex,
-                                        s: "sign"
-                                    })
+                                    let memo = WillService.encodeMemo(pollId, optionIndex);
                                     await GolosService.transferTokens(senderAccount.remote_login, senderAccount.active_key, pollAccount.login, golos_amount, memo)
                                     console.log('vote sent')
                                     return true;
