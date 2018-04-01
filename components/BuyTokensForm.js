@@ -1,7 +1,6 @@
 import { Component } from 'react'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import Router from 'next/router'
 import { post } from '../utils/fetch'
 
 import ProceedIcon from 'react-icons/lib/md/arrow-forward';
