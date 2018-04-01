@@ -5,8 +5,9 @@ import { initStore } from '../utils/store'
 import { getAuthenticatedUser } from "../utils/checkAuth";
 
 import Layout from '../components/Layout'
+import Polls from '../components/Polls'
 
-class IndexPage extends Component {
+class PollsPage extends Component {
 
     static async getInitialProps ({ isServer, req, res, store }) {
         let user = getAuthenticatedUser(isServer, req, store)
@@ -15,11 +16,11 @@ class IndexPage extends Component {
 
     render() {
         return (
-            <Layout title="О проекте">
-                <div className="uk-flex uk-flex-middle uk-flex-center uk-height-large"><h2>Главная страница</h2></div>
+            <Layout title="Голосования">
+                <Polls/>
             </Layout>
         )
     }
 }
 
-export default withRedux(initStore, null)(IndexPage)
+export default withRedux(initStore, null)(PollsPage)

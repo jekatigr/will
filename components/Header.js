@@ -19,8 +19,19 @@ class Header extends Component {
     }
 
     async componentDidMount() {
-        let { loadBalance } = this.props.userActions;
-        await loadBalance();
+        let { user } = this.props;
+        if (user) {
+            let {loadBalance} = this.props.userActions;
+            await loadBalance();
+        }
+    }
+
+    async componentWillReceiveProps(props) {
+        let { user } = props;
+        if (user) {
+            let {loadBalance} = this.props.userActions;
+            await loadBalance();
+        }
     }
 
     render() {
@@ -62,11 +73,6 @@ class Header extends Component {
                         <ul className="uk-navbar-nav uk-visible@s">
                             <li className={(currentPage === '/' ? "uk-active" : null)}>
                                 <Link href={'/'}>
-                                    <a>О проекте</a>
-                                </Link>
-                            </li>
-                            <li className={(currentPage.includes('polls') ? "uk-active" : null)}>
-                                <Link href={'/polls'}>
                                     <a>Голосования</a>
                                 </Link>
                             </li>

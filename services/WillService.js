@@ -291,28 +291,23 @@ module.exports = class WillService {
                 let pollAccount = await DatabaseService.getPollAccount(pollId);
                 let senderAccount = await DatabaseService.getGolosUserAccount(login);
                 if (pollAccount && senderAccount) {
-                    // let pollGolosAccount = await GolosService.getPollAccounts([pollAccount.login]);
-                    // if (pollGolosAccount) {
-                    //     pollGolosAccount = pollGolosAccount[0];
-                    //     let pollInfo = JSON.parse(pollGolosAccount.json_metadata);
-                    //     let optionIndex = pollInfo.o.indexOf(option);
-                        if (optionIndex > -1) {
-                            let numberOfTries = 10;
-                            while (numberOfTries >= 0) {
-                                console.log(`try to vote, poll id: ${pollId}, poll account: ${JSON.stringify(pollAccount)} account from base: ${JSON.stringify(senderAccount)}`)
-                                try {
-                                    let golos_amount = "1.000 GOLOS"
-                                    let memo = WillService.encodeMemo(pollId, optionIndex);
-                                    await GolosService.transferTokens(senderAccount.remote_login, senderAccount.active_key, pollAccount.login, golos_amount, memo)
-                                    console.log('vote sent')
-                                    return true;
-                                } catch (ex) {
-                                    console.log('failed to vote, ex: ' + ex)
-                                }
-                                numberOfTries--;
+                    if (optionIndex > -1) {
+                        let numberOfTries = 10;
+                        while (numberOfTries >= 0) {
+                            console.log(`try to vote, poll id: ${pollId}, poll account: ${JSON.stringify(pollAccount)} account from base: ${JSON.stringify(senderAccount)}`)
+                            try {
+                                let golos_amount = "1.000 GOLOS"
+                                let memo = WillService.encodeMemo(pollId, optionIndex);
+                                await GolosService.transferTokens(senderAccount.remote_login, senderAccount.active_key, pollAccount.login, golos_amount, memo)
+                                console.log('vote sent')
+                                return true;
+                            } catch (ex) {
+                                console.log('failed to vote, ex: ' + ex)
                             }
-
+                            numberOfTries--;
                         }
+
+                    }
                 }
             } catch (ex) {
                 console.log(`Error, ex: ${ex}`)
