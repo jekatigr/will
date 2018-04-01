@@ -5,6 +5,15 @@ golos.config.set('chain_id', '5876894a41e6361bde2e73278f07340f2eb8b41c2facd29099
 
 
 module.exports = class GolosService {
+    /**
+     * Method returns active key of the new user.
+     * @param newLogin
+     * @param password
+     * @param creatorLogin
+     * @param creatorActiveKey
+     * @param fee
+     * @param jsonMetadata
+     */
     static async createAccount(newLogin, password, creatorLogin, creatorActiveKey, fee, jsonMetadata = {}) {
         return new Promise((resolve, reject) => {
             let newKeys = golos.auth.generateKeys(newLogin, password, ['owner', 'active', 'posting', 'memo']);
@@ -29,11 +38,17 @@ module.exports = class GolosService {
             };
             let memoKey = newKeys.memo;
 
-            golos.broadcast.accountCreate(creatorActiveKey, fee, creatorLogin, newLogin, owner, active, posting, memoKey, JSON.stringify(jsonMetadata), function(err, result) {
+            golos.broadcast.accountCreate(creatorActiveKey, fee, creatorLogin, newLogin, owner, active, posting, memoKey, JSON.stringify(jsonMetadata), async function(err, result) {
                 if (err) {
                     reject(`error in accountCreate, err: ${err}, params: newLogin: ${newLogin}, password: ${password}, creatorLogin: ${creatorLogin}, creatorActiveKey: ${creatorActiveKey}, fee: ${fee}, jsonMetadata: ${jsonMetadata}, result: ${result}`);
                 }
-                resolve(result);
+                await GolosService.sendGolosPower(creatorLogin, creatorActiveKey, newLogin, '1.000 GOLOS')
+                let keys = golos.auth.getPrivateKeys(newLogin, password);
+                if (keys) {
+                    resolve(keys.active);
+                } else {
+                    reject(`error in accountCreate, missing private keys`);
+                }
             });
         })
     }
@@ -47,5 +62,43 @@ module.exports = class GolosService {
                 resolve(result);
             });
         })
+    }
+
+    static async getAccountTransactions(login) {
+        return new Promise((resolve, reject) => {
+            golos.api.getAccountHistory(login, 10000, 2000, function(err, result) {//TODO: make full transactions list download
+                if (err) {
+                    reject(`error in getAccountTransactions, err: ${err}, params: login: ${login}`);
+                }
+                let res = result.filter((e)=> e[1].op[0] === 'transfer').map((e) => e[1])
+                resolve(res);
+            });
+        })
+    }
+
+    /**
+     * Method loads accounts with polls
+     * @param pollAccountsLogins string array with logins
+     */
+    static async getPollAccounts(pollAccountsLogins) {
+        return new Promise((resolve, reject) => {
+            golos.api.getAccounts(pollAccountsLogins, function (err, result) {
+                if (err) {
+                    reject(`error in getPollAccounts, err: ${err}, params: pollAccountsLogins: ${pollAccountsLogins}`);
+                }
+                resolve(result)
+            });
+        });
+    }
+
+    static async transferTokens(sender, senderActiveKey, receiver, amount, memo) {
+        return new Promise((resolve, reject) => {
+        golos.broadcast.transfer(senderActiveKey, sender, receiver, amount, memo, function(err, result) {
+            if (err) {
+                reject(`error in transferTokens, err: ${err}, params: sender: ${sender}, senderActiveKey: ${senderActiveKey}, receiver: ${receiver}, amount: ${amount}, memo: ${memo}`);
+            }
+            resolve(result)
+        });
+        });
     }
 }
